@@ -3,6 +3,23 @@
 
 <head>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>
+
+  <!-- Bootstrap stuff -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css"
+    integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous" />
+
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap-theme.min.css"
+    integrity="sha384-6pzBo3FDv/PJ8r2KRkGHifhEocL+1X2rVCTTkUfGk7/0pbek5mMa1upzvWbrUbOZ" crossorigin="anonymous" />
+
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"
+    integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd"
+    crossorigin="anonymous"></script>
+
+  <!-- My terrible CSS -->
+  <link rel="stylesheet" href="styles.css" />
 
   <script>
     const niceTime = ms => {
@@ -19,15 +36,43 @@
       return `${minStr}:${secStr}.${msStr}`;
     }
 
+    const routineSummaryTime = ms => {
+      const seconds = Math.floor(ms / 1000);
+      const minutes = Math.floor(seconds / 60);
+
+      const remSeconds = seconds - (minutes * 60);
+      const remMs = ms - (seconds * 1000);
+
+      const minStr = `${minutes}`;
+      const secStr = `${remSeconds}`.padStart(2, '0');
+      const msStr = `${remMs}`.padStart(3, '0');
+
+      if (minutes > 0) {
+        if (remSeconds > 0) {
+          if (minutes >= 2) {
+            // 3:30 push reads better than 210 second push
+            return `${minStr}:${secStr}`;
+          } else {
+            // 90 second push reads better than 1:30 push
+            return `${seconds} second`;
+          }
+        } else {
+          return `${minStr} minute`;
+        }
+      } else {
+        return `${seconds} second`;
+      }
+    }
+
     // TODO: fetch this from firebase (???)
     const routine = [
       {
         text: "Push",
-        duration: 1000,
+        duration: 85000,
       },
       {
         text: "Base",
-        duration: 5000,
+        duration: 120000,
       },
       {
         text: "All Out",
@@ -40,7 +85,7 @@
     ];
 
     const states = {
-      // states might have some metadata later but for now this is just an enum, can use === as a switch
+      // this is basically just an enum, we have lots of references to each state
       FINISHED: {
         niceText: "Finished"
       },
@@ -66,32 +111,68 @@
     const makeRoutineEltId = (routineEltIdx) => `routineElt_${routineEltIdx}`;
 
     const makeRoutineEltText = (routineElt, remainingTime) => {
+      const nicerText = `${routineSummaryTime(routineElt.duration)} ${routineElt.text}`;
+
       if (routineElt.state === states.RUNNING) {
 
-        return `${routineElt.text} (${niceTime(routineElt.duration)}) has ${niceTime(remainingTime)} remaining`;
-      } else {
-        return `${routineElt.text} (${niceTime(routineElt.duration)}) in state ${routineElt.state.niceText}`;
+        return `<p>${nicerText} -- ${niceTime(remainingTime)} remaining</p>`;
+      } else if (routineElt.state === states.NOT_YET) {
+        return `<p class="text-muted">${nicerText}</p>`;
+      } else if (routineElt.state === states.FINISHED) {
+        return `<p class="text-muted">${nicerText}</p>`;
       }
     };
 
     const setState = ({ idx, state, remainingTime }) => {
-      console.log(`Setting state of element ${idx} to ${state.niceText}`);
       const routineElt = routine[idx];
       routineElt.state = state;
-      $(`#${makeRoutineEltId(idx)}`).text(makeRoutineEltText(routineElt, remainingTime));
+      $(`#${makeRoutineEltId(idx)}`).html(makeRoutineEltText(routineElt, remainingTime));
+
+      if (state === states.FINISHED) {
+        $(`#${makeRoutineEltId(idx)}`).addClass('hidden');
+      }
     };
 
     const markDone = () => {
-      $("#routineList").before($("<b></b>").text("YOU DID A GREAT GREAT JOB"));
+      $("#routineList").append($("<li class=\"list-group-item\"><p>🎉 COLLAPSE 🎉</p></li>"));
     }
 
-    const startTime = Date.now();
+    let startTime = undefined;
+    let priorElapsedMs = 0;
+    let interval = undefined;
+    let isPaused = true;
+
+    const unpause = () => {
+      if (!isPaused) {
+        return;
+      }
+
+      isPaused = false;
+      startTime = Date.now();
+
+      $("#pausePlayButton").text("Pause");
+
+      interval = setInterval(timestep, 50);
+    }
+
+    const pause = () => {
+      if (isPaused) {
+        return;
+      }
+
+      isPaused = true;
+      priorElapsedMs += Date.now() - startTime;
+      startTime = undefined;
+
+      $("#pausePlayButton").text("Start");
+
+      clearInterval(interval);
+      interval = undefined;
+    }
 
     let routineIdx = -1;
 
     const updateStates = ({ elapsedMs }) => {
-      console.log("Trying to update states");
-
       while (routineIdx < routine.length) {
 
         if (routineIdx < 0) {
@@ -124,7 +205,7 @@
     const timestep = () => {
       const now = Date.now();
 
-      const elapsedMs = now - startTime;
+      const elapsedMs = now - startTime + priorElapsedMs;
 
       updateStates({ elapsedMs });
     };
@@ -137,32 +218,34 @@
 
         const niceText = makeRoutineEltText(routineElt, routineElt.duration);
 
-        $("#routineList").append(`<li id=${routineId}>${niceText}</li>`);
+        $("#routineList").append(`<li id=${routineId} class="list-group-item"> ${niceText}</li>`);
       }
 
-      $("#buttonId").click(function () {
-        console.log("idk it's a button")
-      })
+      $("#pausePlayButton").click(function () {
+        if (isPaused) {
+          unpause();
+        } else {
+          pause();
+        }
 
-      setInterval(timestep, 50);
+        $(this).toggleClass("btn-warning");
+        $(this).toggleClass("btn-success");
+      });
     });
   </script>
 </head>
 
 <body>
   <div id="mainDiv">
-    <p>
-      Hello I am writing HTML by hand like it's 19 fucking 97.
-    </p>
 
-    <ul id="routineList">
+    <button id="pausePlayButton" class="btn btn-lg btn-success pausePlayButton">
+      Start
+    </button>
 
+    <ul id="routineList" class="list-group">
+      <!-- filled in dynamically with jquery -->
     </ul>
   </div>
-
-  <button id="buttonId">
-    Next
-  </button>
 
 </body>
 

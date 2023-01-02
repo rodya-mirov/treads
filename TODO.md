@@ -15,33 +15,30 @@ Buncha stuff I guess. Could divide into categories:
   
 3. QOL
 
-    Pause / play / restart?
-    Routine picker
+    [x] Routine Running Flow
+        [x]  Routine steps are rendered, not running
+        [x]  There is a play/pause button to start/stop the routine
+        [x]  Play/pause button starts/pauses the routine (basically just start/stop the interval)
 
-    Pick Flow
-      List of available routines is rendered (firebase?)
-      Pick a routine with click
-      Routine is rendered, not running
-      There is a play/pause button to start/stop the routine
-
-      Play/pause button starts/pauses the routine (basically just start/stop the interval)
+    [ ] Pick Flow
+        [ ]  List of available routines is rendered (firebase?)
+        [ ]  Pick a routine with click
+        [ ]  Routine is rendered, not running (paused)
     
-    Restart Flow
-      Should have a restart button
-      Clicking pauses routine & launches a modal "this will start over the routine"
-      On confirm, routine goes back to start (paused, no elapsed time)
-      On cancel, modal drops, nothing else happens (still paused)
+    [ ] Restart Flow
+        [ ] Should have a restart button
+        [ ] Clicking pauses routine & launches a modal "this will start over the routine"
+        [ ] On confirm, routine goes back to start (paused, no elapsed time)
+        [ ] On cancel, modal drops, nothing else happens (still paused)
     
-    Re-pick flow
-      Should have a "pick new routine" button/link/etc.
-      Clicking pauses routine & launches a modal "this will clear your progress"
-      On confirm, routine is cleared, go back to routine picker
-      On cancel, modal drops, nothing else happens (still paused)
-
-      jquery frameworks maybe support a modal?
-        https://jquerymodal.com/?
+    [ ] Re-pick flow
+        [ ] Should have a "pick new routine" button/link/etc.
+        [ ] Clicking pauses routine & launches a modal "this will clear your progress"
+        [ ] On confirm, routine is cleared, go back to routine picker
+        [ ] On cancel, modal drops, nothing else happens (still paused)
 
 4.  Hosting
 
-  Webpage should be visible, somewhere
-  I really don't want to have a deploy script if i can avoid it
+  [x] Webpage should be visible, somewhere
+  [x] I really don't want to have a deploy script if i can avoid it
+  [x] looks like gh-pages is a good solution here, since it's all just static files
