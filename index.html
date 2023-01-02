@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+
+  <script>
+    const niceTime = ms => {
+      const seconds = Math.floor(ms / 1000);
+      const minutes = Math.floor(seconds / 60);
+
+      const remSeconds = seconds - (minutes * 60);
+      const remMs = ms - (seconds * 1000);
+
+      const minStr = `${minutes}`;
+      const secStr = `${remSeconds}`.padStart(2, '0');
+      const msStr = `${remMs}`.padStart(3, '0');
+
+      return `${minStr}:${secStr}.${msStr}`;
+    }
+
+    // TODO: fetch this from firebase (???)
+    const routine = [
+      {
+        text: "Push",
+        duration: 1000,
+      },
+      {
+        text: "Base",
+        duration: 5000,
+      },
+      {
+        text: "All Out",
+        duration: 3000,
+      },
+      {
+        text: "Base",
+        duration: 5000,
+      },
+    ];
+
+    const states = {
+      // states might have some metadata later but for now this is just an enum, can use === as a switch
+      FINISHED: {
+        niceText: "Finished"
+      },
+      RUNNING: {
+        niceText: "Running"
+      },
+      NOT_YET: {
+        niceText: "Not Yet Started"
+      },
+    }
+
+    // tidy up / autogen the elements of the list so it's easier to work with later
+    let routineTotalTimeMs = 0;
+
+    for (const routineEltIdx in routine) {
+      const routineElt = routine[routineEltIdx];
+      routineElt.totalPreceding = routineTotalTimeMs;
+      routineElt.state = states.NOT_YET;
+
+      routineTotalTimeMs += routineElt.duration;
+    }
+
+    const makeRoutineEltId = (routineEltIdx) => `routineElt_${routineEltIdx}`;
+
+    const makeRoutineEltText = (routineElt, remainingTime) => {
+      if (routineElt.state === states.RUNNING) {
+
+        return `${routineElt.text} (${niceTime(routineElt.duration)}) has ${niceTime(remainingTime)} remaining`;
+      } else {
+        return `${routineElt.text} (${niceTime(routineElt.duration)}) in state ${routineElt.state.niceText}`;
+      }
+    };
+
+    const setState = ({ idx, state, remainingTime }) => {
+      console.log(`Setting state of element ${idx} to ${state.niceText}`);
+      const routineElt = routine[idx];
+      routineElt.state = state;
+      $(`#${makeRoutineEltId(idx)}`).text(makeRoutineEltText(routineElt, remainingTime));
+    };
+
+    const markDone = () => {
+      $("#routineList").before($("<b></b>").text("YOU DID A GREAT GREAT JOB"));
+    }
+
+    const startTime = Date.now();
+
+    let routineIdx = -1;
+
+    const updateStates = ({ elapsedMs }) => {
+      console.log("Trying to update states");
+
+      while (routineIdx < routine.length) {
+
+        if (routineIdx < 0) {
+          routineIdx = 0;
+          setState({ idx: routineIdx, state: states.RUNNING, remainingTime: routine[0].duration });
+          continue;
+        }
+
+        const routineElt = routine[routineIdx];
+
+        if (elapsedMs > routineElt.duration + routineElt.totalPreceding) {
+          setState({ idx: routineIdx, state: states.FINISHED, remainingTime: 0 });
+          routineIdx += 1;
+
+          if (routineIdx >= routine.length) {
+            markDone();
+          }
+          continue;
+        } else {
+
+          // this takes the record for weirdest loop flow control i think i've ever written
+          // TODO clean this up before the internet sees it
+          // TODO setState ALSO updates the remsec text, which is janky
+          setState({ idx: routineIdx, state: states.RUNNING, remainingTime: routineElt.duration + routineElt.totalPreceding - elapsedMs });
+          return;
+        }
+      }
+    };
+
+    const timestep = () => {
+      const now = Date.now();
+
+      const elapsedMs = now - startTime;
+
+      updateStates({ elapsedMs });
+    };
+
+    $(document).ready(function () {
+
+      for (const routineEltIdx in routine) {
+        const routineElt = routine[routineEltIdx];
+        const routineId = makeRoutineEltId(routineEltIdx);
+
+        const niceText = makeRoutineEltText(routineElt, routineElt.duration);
+
+        $("#routineList").append(`<li id=${routineId}>${niceText}</li>`);
+      }
+
+      $("#buttonId").click(function () {
+        console.log("idk it's a button")
+      })
+
+      setInterval(timestep, 50);
+    });
+  </script>
+</head>
+
+<body>
+  <div id="mainDiv">
+    <p>
+      Hello I am writing HTML by hand like it's 19 fucking 97.
+    </p>
+
+    <ul id="routineList">
+
+    </ul>
+  </div>
+
+  <button id="buttonId">
+    Next
+  </button>
+
+</body>
+
+</html>
