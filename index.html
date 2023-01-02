@@ -68,7 +68,7 @@
     const routine = [
       {
         text: "Push",
-        duration: 85000,
+        duration: 15000,
       },
       {
         text: "Base",
@@ -111,11 +111,11 @@
     const makeRoutineEltId = (routineEltIdx) => `routineElt_${routineEltIdx}`;
 
     const makeRoutineEltText = (routineElt, remainingTime) => {
-      const nicerText = `${routineSummaryTime(routineElt.duration)} ${routineElt.text}`;
+      const nicerText = `${routineSummaryTime(routineElt.duration)} ${routineElt.text}`.toUpperCase();
 
       if (routineElt.state === states.RUNNING) {
 
-        return `<p>${nicerText} -- ${niceTime(remainingTime)} remaining</p>`;
+        return `<p>${nicerText}</p><p>${niceTime(remainingTime)} remaining</p>`;
       } else if (routineElt.state === states.NOT_YET) {
         return `<p class="text-muted">${nicerText}</p>`;
       } else if (routineElt.state === states.FINISHED) {
