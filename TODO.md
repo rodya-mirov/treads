@@ -25,6 +25,12 @@ Buncha stuff I guess. Could divide into categories:
         [ ]  Pick a routine with click
         [ ]  Routine is rendered, not running (paused)
     
+    [ ] Better data summary
+        [ ] Time so far
+        [ ] Time remaining (total)
+    
+    [ ] Phone somehow not going to sleep during the routine
+    
     Note these two flows are "nice to have" since you can just refresh the page to achieve the purpose
 
     [ ] Restart Flow

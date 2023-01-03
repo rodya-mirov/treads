@@ -1,68 +1,4 @@
-
-const niceTime = ms => {
-  const seconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
-
-  const remSeconds = seconds - (minutes * 60);
-  const remMs = ms - (seconds * 1000);
-
-  const minStr = `${minutes}`;
-  const secStr = `${remSeconds}`.padStart(2, '0');
-
-  const csStr = `${Math.floor(remMs / 10)}`.padStart(2, '0');
-
-  return `${minStr} : ${secStr} . ${csStr}`;
-}
-
-const routineSummaryTime = ms => {
-  const seconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
-
-  const remSeconds = seconds - (minutes * 60);
-  const remMs = ms - (seconds * 1000);
-
-  const minStr = `${minutes}`;
-  const secStr = `${remSeconds}`.padStart(2, '0');
-  const msStr = `${remMs}`.padStart(3, '0');
-
-  if (minutes > 0) {
-    if (remSeconds > 0) {
-      if (minutes >= 2) {
-        // 3:30 push reads better than 210 second push
-        return `${minStr}:${secStr}`;
-      } else {
-        // 90 second push reads better than 1:30 push
-        return `${seconds} second`;
-      }
-    } else {
-      return `${minStr} minute`;
-    }
-  } else {
-    return `${seconds} second`;
-  }
-}
-
-// TODO: fetch this from firebase (???)
-const routine = [
-  {
-    text: "Push",
-    duration: 15000,
-  },
-  {
-    text: "Base",
-    duration: 120000,
-  },
-  {
-    text: "All Out",
-    duration: 3000,
-  },
-  {
-    text: "Base",
-    duration: 5000,
-  },
-];
-
-const states = {
+const STATES = {
   // this is basically just an enum, we have lots of references to each state
   FINISHED: {
     niceText: "Finished"
@@ -75,38 +11,42 @@ const states = {
   },
 }
 
-// tidy up / autogen the elements of the list so it's easier to work with later
-let routineTotalTimeMs = 0;
+const setupRoutine = ({ routineState }) => {
 
-for (const routineEltIdx in routine) {
-  const routineElt = routine[routineEltIdx];
-  routineElt.totalPreceding = routineTotalTimeMs;
-  routineElt.state = states.NOT_YET;
+  // tidy up / autogen the elements of the list so it's easier to work with later
+  let routineTotalTimeMs = 0;
 
-  routineTotalTimeMs += routineElt.duration;
-}
+  const routine = routineState.routine;
+
+  for (const routineEltIdx in routine) {
+    const routineElt = routine[routineEltIdx];
+    routineElt.totalPreceding = routineTotalTimeMs;
+    routineElt.state = STATES.NOT_YET;
+
+    routineTotalTimeMs += routineElt.duration;
+  }
+};
 
 const makeRoutineEltId = (routineEltIdx) => `routineElt_${routineEltIdx}`;
 
-const makeRoutineEltText = (routineElt, remainingTime) => {
+const makeRoutineEltContents = (routineElt, remainingTime) => {
   const nicerText = `${routineSummaryTime(routineElt.duration)} ${routineElt.text}`.toUpperCase();
 
-  if (routineElt.state === states.RUNNING) {
+  if (routineElt.state === STATES.RUNNING) {
 
     return `<p class="routinePara">${nicerText}</p><p class="routinePara">TIME LEFT — ${niceTime(remainingTime)}</p>`;
-  } else if (routineElt.state === states.NOT_YET) {
+  } else if (routineElt.state === STATES.NOT_YET) {
     return `<p class="text-muted routinePara">${nicerText}</p>`;
-  } else if (routineElt.state === states.FINISHED) {
+  } else if (routineElt.state === STATES.FINISHED) {
     return `<p class="text-muted routinePara">${nicerText}</p>`;
   }
 };
 
-const setState = ({ idx, state, remainingTime }) => {
-  const routineElt = routine[idx];
+const setState = ({ idx, state, remainingTime, routineElt }) => {
   routineElt.state = state;
-  $(`#${makeRoutineEltId(idx)}`).html(makeRoutineEltText(routineElt, remainingTime));
+  $(`#${makeRoutineEltId(idx)}`).html(makeRoutineEltContents(routineElt, remainingTime));
 
-  if (state === states.FINISHED) {
+  if (state === STATES.FINISHED) {
     $(`#${makeRoutineEltId(idx)}`).addClass('hidden');
   }
 };
@@ -115,57 +55,83 @@ const markDone = () => {
   $("#routineList").append($("<li class=\"list-group-item border-0 routineItem\"><p class=\"routinePara\">🎉 COLLAPSE 🎉</p></li>"));
 }
 
-let startTime = undefined;
-let priorElapsedMs = 0;
-let interval = undefined;
-let isPaused = true;
+class RoutineState {
+  constructor(routine) {
+    this.routine = routine;
+    this.routineIdx = -1;
+  }
+}
 
-const unpause = () => {
-  if (!isPaused) {
+class TimingState {
+  constructor() {
+    this.startTime = undefined;
+    this.priorElapsedMs = 0;
+    this.interval = undefined;
+    this.isPaused = true;
+  }
+
+  reset() {
+    this.startTime = undefined;
+    this.priorElapsedMs = 0;
+
+    if (this.interval) {
+      clearInterval(this.interval);
+    }
+
+    this.interval = undefined;
+    this.isPaused = true;
+  }
+}
+
+const unpause = ({ routineState, timingState }) => {
+  if (!timingState.isPaused) {
     return;
   }
 
-  isPaused = false;
-  startTime = Date.now();
+  timingState.isPaused = false;
+  timingState.startTime = Date.now();
 
   $("#pausePlayButtonText").text("Pause");
 
-  interval = setInterval(timestep, 50);
+  timingState.interval = setInterval(() => timestep({ routineState, timingState }), 50);
 }
 
-const pause = () => {
-  if (isPaused) {
+const pause = ({ timingState }) => {
+  if (timingState.isPaused) {
     return;
   }
 
-  isPaused = true;
-  priorElapsedMs += Date.now() - startTime;
-  startTime = undefined;
+  timingState.isPaused = true;
+  timingState.priorElapsedMs += Date.now() - timingState.startTime;
+  timingState.startTime = undefined;
 
   $("#pausePlayButtonText").text("Start");
 
-  clearInterval(interval);
-  interval = undefined;
+  clearInterval(timingState.interval);
+  timingState.interval = undefined;
 }
 
-let routineIdx = -1;
+const updateStates = ({ elapsedMs, routineState }) => {
+  const routine = routineState.routine;
 
-const updateStates = ({ elapsedMs }) => {
-  while (routineIdx < routine.length) {
+  while (routineState.routineIdx < routine.length) {
 
-    if (routineIdx < 0) {
-      routineIdx = 0;
-      setState({ idx: routineIdx, state: states.RUNNING, remainingTime: routine[0].duration });
+    if (routineState.routineIdx < 0) {
+      routineState.routineIdx = 0;
+
+      const routineElt = routine[routineState.routineIdx];
+
+      setState({ idx: routineState.routineIdx, state: STATES.RUNNING, remainingTime: routine[0].duration, routineElt });
       continue;
     }
 
-    const routineElt = routine[routineIdx];
+    const routineElt = routine[routineState.routineIdx];
 
     if (elapsedMs > routineElt.duration + routineElt.totalPreceding) {
-      setState({ idx: routineIdx, state: states.FINISHED, remainingTime: 0 });
-      routineIdx += 1;
+      setState({ idx: routineState.routineIdx, state: STATES.FINISHED, remainingTime: 0, routineElt });
+      routineState.routineIdx += 1;
 
-      if (routineIdx >= routine.length) {
+      if (routineState.routineIdx >= routine.length) {
         markDone();
       }
       continue;
@@ -174,39 +140,59 @@ const updateStates = ({ elapsedMs }) => {
       // this takes the record for weirdest loop flow control i think i've ever written
       // TODO clean this up before the internet sees it
       // TODO setState ALSO updates the remsec text, which is janky
-      setState({ idx: routineIdx, state: states.RUNNING, remainingTime: routineElt.duration + routineElt.totalPreceding - elapsedMs });
+      setState({ idx: routineState.routineIdx, state: STATES.RUNNING, remainingTime: routineElt.duration + routineElt.totalPreceding - elapsedMs, routineElt });
       return;
     }
   }
 };
 
-const timestep = () => {
+const timestep = ({ routineState, timingState }) => {
   const now = Date.now();
 
-  const elapsedMs = now - startTime + priorElapsedMs;
+  const elapsedMs = now - timingState.startTime + timingState.priorElapsedMs;
 
-  updateStates({ elapsedMs });
+  updateStates({ elapsedMs, routineState });
 };
 
-$(document).ready(function () {
+const resetRoutine = ({ routineState }) => {
+
+  setupRoutine({ routineState });
+
+  const routine = routineState.routine;
+
+  $("#routineList").empty();
 
   for (const routineEltIdx in routine) {
     const routineElt = routine[routineEltIdx];
     const routineId = makeRoutineEltId(routineEltIdx);
 
-    const niceText = makeRoutineEltText(routineElt, routineElt.duration);
+    const niceText = makeRoutineEltContents(routineElt, routineElt.duration);
 
     $("#routineList").append(`<li id=${routineId} class="list-group-item border-0 routineItem"> ${niceText}</li>`);
   }
+}
+
+$(document).ready(function () {
+
+  const routineState = new RoutineState(makeRoutine());
+
+  resetRoutine({ routineState });
+
+  const timingState = new TimingState();
 
   $("#pausePlayButton").click(function () {
-    if (isPaused) {
-      unpause();
+    if (timingState.isPaused) {
+      unpause({ routineState, timingState });
     } else {
-      pause();
+      pause({ timingState });
     }
 
     $(this).toggleClass("btn-warning");
     $(this).toggleClass("btn-success");
   });
+
+  $("#restartButton").click(function () {
+    timingState.reset();
+    resetRoutine({ routineState });
+  })
 });
