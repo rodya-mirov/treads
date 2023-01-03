@@ -186,13 +186,14 @@ $(document).ready(function () {
     } else {
       pause({ timingState });
     }
-
-    $(this).toggleClass("btn-warning");
-    $(this).toggleClass("btn-success");
   });
 
   $("#restartButton").click(function () {
+    pause({ timingState });
+  });
+
+  $("#restartTemplateConfirmButton").click(function () {
     timingState.reset();
     resetRoutine({ routineState });
-  })
+  });
 });

@@ -33,11 +33,11 @@ Buncha stuff I guess. Could divide into categories:
     
     Note these two flows are "nice to have" since you can just refresh the page to achieve the purpose
 
-    [ ] Restart Flow
-        [ ] Should have a restart button
-        [ ] Clicking pauses routine & launches a modal "this will start over the routine"
-        [ ] On confirm, routine goes back to start (paused, no elapsed time)
-        [ ] On cancel, modal drops, nothing else happens (still paused)
+    [x] Restart Flow
+        [x] Should have a restart button
+        [x] Clicking pauses routine & launches a modal "this will start over the routine"
+        [x] On confirm, routine goes back to start (paused, no elapsed time)
+        [x] On cancel, modal drops, nothing else happens (still paused)
     
     [ ] Re-pick flow
         [ ] Should have a "pick new routine" button/link/etc.
