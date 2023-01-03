@@ -34,7 +34,7 @@ const makeRoutineEltContents = (routineElt, remainingTime) => {
 
   if (routineElt.state === STATES.RUNNING) {
 
-    return `<p class="routinePara bigText">${nicerText}</p><p class="routinePara bigText">TIME LEFT — ${niceTime(remainingTime)}</p>`;
+    return `<p class="routinePara bigText">${nicerText}</p><p class="routinePara bigText">${niceTime(remainingTime)}</p>`;
   } else if (routineElt.state === STATES.NOT_YET) {
     return `<p class="text-muted routinePara bigText">${nicerText}</p>`;
   } else if (routineElt.state === STATES.FINISHED) {
