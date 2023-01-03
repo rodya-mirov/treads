@@ -31,9 +31,10 @@
 
       const minStr = `${minutes}`;
       const secStr = `${remSeconds}`.padStart(2, '0');
-      const msStr = `${remMs}`.padStart(3, '0');
 
-      return `${minStr}:${secStr}.${msStr}`;
+      const csStr = `${Math.floor(remMs / 10)}`.padStart(2, '0');
+
+      return `${minStr} : ${secStr} . ${csStr}`;
     }
 
     const routineSummaryTime = ms => {
@@ -115,11 +116,11 @@
 
       if (routineElt.state === states.RUNNING) {
 
-        return `<p>${nicerText}</p><p>${niceTime(remainingTime)} remaining</p>`;
+        return `<p class="routinePara">${nicerText}</p><p class="routinePara">TIME LEFT — ${niceTime(remainingTime)}</p>`;
       } else if (routineElt.state === states.NOT_YET) {
-        return `<p class="text-muted">${nicerText}</p>`;
+        return `<p class="text-muted routinePara">${nicerText}</p>`;
       } else if (routineElt.state === states.FINISHED) {
-        return `<p class="text-muted">${nicerText}</p>`;
+        return `<p class="text-muted routinePara">${nicerText}</p>`;
       }
     };
 
@@ -134,7 +135,7 @@
     };
 
     const markDone = () => {
-      $("#routineList").append($("<li class=\"list-group-item\"><p>🎉 COLLAPSE 🎉</p></li>"));
+      $("#routineList").append($("<li class=\"list-group-item border-0 routineItem\"><p class=\"routinePara\">🎉 COLLAPSE 🎉</p></li>"));
     }
 
     let startTime = undefined;
@@ -150,7 +151,7 @@
       isPaused = false;
       startTime = Date.now();
 
-      $("#pausePlayButton").text("Pause");
+      $("#pausePlayButtonText").text("Pause");
 
       interval = setInterval(timestep, 50);
     }
@@ -164,7 +165,7 @@
       priorElapsedMs += Date.now() - startTime;
       startTime = undefined;
 
-      $("#pausePlayButton").text("Start");
+      $("#pausePlayButtonText").text("Start");
 
       clearInterval(interval);
       interval = undefined;
@@ -218,7 +219,7 @@
 
         const niceText = makeRoutineEltText(routineElt, routineElt.duration);
 
-        $("#routineList").append(`<li id=${routineId} class="list-group-item"> ${niceText}</li>`);
+        $("#routineList").append(`<li id=${routineId} class="list-group-item border-0 routineItem"> ${niceText}</li>`);
       }
 
       $("#pausePlayButton").click(function () {
@@ -238,9 +239,14 @@
 <body>
   <div id="mainDiv">
 
-    <button id="pausePlayButton" class="btn btn-lg btn-success pausePlayButton">
-      Start
-    </button>
+    <div id="buttons" class="buttonsContainer">
+      <button id="pausePlayButton" class="btn btn-lg btn-success stretchButton">
+        <p class="buttonText" id="pausePlayButtonText">Start</p>
+      </button>
+      <button id="restartButton" class="btn btn-lg btn-success stretchButton">
+        <p class="buttonText" id="restartButtonText">Restart</p>
+      </button>
+    </div>
 
     <ul id="routineList" class="list-group">
       <!-- filled in dynamically with jquery -->

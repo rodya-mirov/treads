@@ -25,6 +25,8 @@ Buncha stuff I guess. Could divide into categories:
         [ ]  Pick a routine with click
         [ ]  Routine is rendered, not running (paused)
     
+    Note these two flows are "nice to have" since you can just refresh the page to achieve the purpose
+
     [ ] Restart Flow
         [ ] Should have a restart button
         [ ] Clicking pauses routine & launches a modal "this will start over the routine"
