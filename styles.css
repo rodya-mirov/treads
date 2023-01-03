@@ -2,13 +2,15 @@
   border: 0;
 }
 
-.routinePara {
+.bigText {
   font-size: xx-large;
+}
+
+.routinePara {
   text-align: right;
 }
 
 .buttonText {
-  font-size: xx-large;
   text-align: center;
 
   margin-left: auto;

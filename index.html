@@ -26,20 +26,22 @@
 
 <body>
 
-  <div class="modal fade" id="restartButtonModal" tabindex="-1" role="dialog" aria-labelledby="restartButtonModal"
+  <div class="modal fade" id="resetButtonModal" tabindex="-1" role="dialog" aria-labelledby="resetButtonModal"
     aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-body">
-          <p>
-            Restart the template? This will clear your progress thus far.
+          <p class="bigText">
+            Reset the template? This will clear your progress.
           </p>
         </div>
         <div class="modal-footer border-0">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal"
-            id="restartTemplateCancelButton">Cancel</button>
-          <button type="button" class="btn btn-warning" data-dismiss="modal" id="restartTemplateConfirmButton">Restart
-            template</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" id="resetTemplateCancelButton">
+            <p class="bigText">Cancel</p>
+          </button>
+          <button type="button" class="btn btn-warning" data-dismiss="modal" id="resetTemplateConfirmButton">
+            <p class="bigText">Reset</p>
+          </button>
         </div>
       </div>
     </div>
@@ -49,11 +51,11 @@
 
     <div id="buttons" class="buttonsContainer">
       <button id="pausePlayButton" class="btn btn-lg btn-success stretchButton">
-        <p class="buttonText" id="pausePlayButtonText">Start</p>
+        <p class="buttonText bigText" id="pausePlayButtonText">Start</p>
       </button>
-      <button id="restartButton" class="btn btn-lg btn-warning stretchButton" data-toggle="modal"
-        data-target="#restartButtonModal">
-        <p class="buttonText" id="restartButtonText">Restart</p>
+      <button id="resetButton" class="btn btn-lg btn-warning stretchButton" data-toggle="modal"
+        data-target="#resetButtonModal">
+        <p class="buttonText bigText" id="resetButtonText">Reset</p>
       </button>
     </div>
 

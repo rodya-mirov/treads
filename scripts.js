@@ -34,11 +34,11 @@ const makeRoutineEltContents = (routineElt, remainingTime) => {
 
   if (routineElt.state === STATES.RUNNING) {
 
-    return `<p class="routinePara">${nicerText}</p><p class="routinePara">TIME LEFT — ${niceTime(remainingTime)}</p>`;
+    return `<p class="routinePara bigText">${nicerText}</p><p class="routinePara bigText">TIME LEFT — ${niceTime(remainingTime)}</p>`;
   } else if (routineElt.state === STATES.NOT_YET) {
-    return `<p class="text-muted routinePara">${nicerText}</p>`;
+    return `<p class="text-muted routinePara bigText">${nicerText}</p>`;
   } else if (routineElt.state === STATES.FINISHED) {
-    return `<p class="text-muted routinePara">${nicerText}</p>`;
+    return `<p class="text-muted routinePara bigText">${nicerText}</p>`;
   }
 };
 
@@ -52,7 +52,7 @@ const setState = ({ idx, state, remainingTime, routineElt }) => {
 };
 
 const markDone = () => {
-  $("#routineList").append($("<li class=\"list-group-item border-0 routineItem\"><p class=\"routinePara\">🎉 COLLAPSE 🎉</p></li>"));
+  $("#routineList").append($("<li class=\"list-group-item border-0 routineItem\"><p class=\"routinePara bigText\">🎉 COLLAPSE 🎉</p></li>"));
 }
 
 class RoutineState {
@@ -188,11 +188,11 @@ $(document).ready(function () {
     }
   });
 
-  $("#restartButton").click(function () {
+  $("#resetButton").click(function () {
     pause({ timingState });
   });
 
-  $("#restartTemplateConfirmButton").click(function () {
+  $("#resetTemplateConfirmButton").click(function () {
     timingState.reset();
     resetRoutine({ routineState });
   });
