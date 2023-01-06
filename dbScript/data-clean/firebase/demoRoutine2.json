@@ -1,0 +1,22 @@
+{
+  "routines": [
+    {
+      "Document ID": "demoTemplate2",
+      "displayName": "demoTemplate2",
+      "routine": [
+        {
+          "text": "Push",
+          "duration": 12000
+        },
+        {
+          "text": "All Out",
+          "duration": 3000
+        },
+        {
+          "text": "Base",
+          "duration": 5000
+        }
+      ]
+    }
+  ]
+}

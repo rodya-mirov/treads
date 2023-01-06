@@ -1,0 +1,16 @@
+{
+  "name": "dbscript",
+  "version": "1.0.0",
+  "description": "Some CLI for managing the firebase data",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "upload": "node main.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "firebase": "^8.10.1",
+    "firestore-export-import": "^1.3.5"
+  }
+}
