@@ -1,4 +1,4 @@
-const niceTime = ms => {
+export const niceTime = ms => {
   const seconds = Math.floor(ms / 1000);
   const minutes = Math.floor(seconds / 60);
 
@@ -13,7 +13,7 @@ const niceTime = ms => {
   return `${minStr} : ${secStr} . ${csStr}`;
 }
 
-const routineSummaryTime = ms => {
+export const routineSummaryTime = ms => {
   const seconds = Math.floor(ms / 1000);
   const minutes = Math.floor(seconds / 60);
 

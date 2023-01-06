@@ -1,3 +1,6 @@
+import { routineSummaryTime, niceTime } from './helpers.js';
+import { allRoutines } from './fetchers.js';
+
 const STATES = {
   // this is basically just an enum, we have lots of references to each state
   FINISHED: {
@@ -174,7 +177,10 @@ const resetRoutine = ({ routineState }) => {
 
 $(document).ready(function () {
 
-  const routineState = new RoutineState(makeRoutine());
+  const routineChoices = Object.values(allRoutines);
+  const ind = Math.floor(Math.random() * routineChoices.length);
+
+  const routineState = new RoutineState(routineChoices[ind].routine);
 
   resetRoutine({ routineState });
 
